@@ -547,6 +547,87 @@ var flowchart = {
 			connectionsViewModel.push(connectionViewModel);
 		};
 
+		/**
+		 * Deletes the connection passed as an argument
+		 * @param {*} connection the connection to delete
+		 */
+		this.deleteConnection = function (connection) {
+			if (!this.data.connections) {
+				return;
+			}
+
+			if (!this.connections) {
+				return;
+			}
+
+			var connectionSourceNodeId = connection.data.source.nodeID;
+
+			var connectionDestNodeId = connection.data.dest.nodeID;
+
+			this.data.connections = this._deleteConnectionFromList(connectionSourceNodeId, connectionDestNodeId, this.data.connections);
+
+			this.connections = this._deleteConnectionFromList(connectionSourceNodeId, connectionDestNodeId, this.connections);
+		};
+
+		this._deleteConnectionFromList = function(connectionSourceNodeId, connectionDestNodeId, connections){
+			var connectionsAfterDelete = [];
+
+			for(var i = 0; i < connections.length; i++){
+				var source = connections[i].data || connections[i];
+
+				var sourceNodeId = source.source.nodeID;
+
+				var destination = connections[i].data || connections[i];
+
+				var destinationNodeId = destination.dest.nodeID
+
+				if(connectionSourceNodeId === sourceNodeId && connectionDestNodeId === destinationNodeId){
+					continue;
+				}
+
+				connectionsAfterDelete.push(connections[i]);
+			}
+
+			return connectionsAfterDelete;
+		}
+
+		this.connectNodeBetween = function(connection, newNodeID){
+			var sourceDataConnection = this._connectDataNodes(connection.data.source.nodeID, newNodeID);
+			this._connectViewModelNodes(sourceDataConnection, connection.source, this.findInputConnector(newNodeID, 0));
+
+			var destinationDataConnection = this._connectDataNodes(newNodeID, connection.data.dest.nodeID);
+			this._connectViewModelNodes(destinationDataConnection, this.findOutputConnector(newNodeID, 0), connection.dest);
+		}
+
+		this._connectDataNodes = function(sourceNodeId, destintationNodeId){
+			var startNode = {
+				nodeID: sourceNodeId,
+				connectorIndex: 0,
+			}
+
+			var endNode = {
+				nodeID: destintationNodeId,
+				connectorIndex: 0,
+			}
+
+			var connectionDataModel = {
+				source: startNode,
+				dest: endNode
+			};
+
+			this.data.connections.push(connectionDataModel);
+
+			return connectionDataModel;
+		}
+
+		this._connectViewModelNodes = function(connectionDataModel, sourceNode, destinationNode){
+			var outputConnector = sourceNode;
+			var inputConnector = destinationNode;
+
+			var connectionViewModel = new flowchart.ConnectionViewModel(connectionDataModel, outputConnector, inputConnector);
+			this.connections.push(connectionViewModel);
+		}
+
 		//
 		// Add a node to the view model.
 		//
