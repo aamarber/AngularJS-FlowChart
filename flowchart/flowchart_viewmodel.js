@@ -591,6 +591,84 @@ var flowchart = {
 			return connectionsAfterDelete;
 		}
 
+		this.getConnectionsFromConnection = function(connection){
+			var connectionsData = this.data.connections;
+
+			var inputConnections = getInputConnectionsFromConnection(connection, connectionsData, []);
+
+			var outputConnections = getOutputConnectionsFromConnection(connection, connectionsData, []);
+
+			var connectionsToAndFrom = inputConnections.concat(outputConnections);
+
+			return connectionsToAndFrom;
+		}
+
+		function getInputConnectionsFromConnection(connection, connections, connectionsFound){
+			return getConnectionsFromConnection(connection, connections, connectionsFound, -1);
+		}
+
+		function getOutputConnectionsFromConnection(connection, connections, connectionsFound){
+			return getConnectionsFromConnection(connection, connections, connectionsFound, 1);
+		}
+
+		function getConnectionsFromConnection(connection, connections, connectionsFound, direction){
+			var rootNode = direction > 0 ? connection.dest : connection.source;
+
+			var directedConnections = getConnectionsToNode(rootNode, connections, connectionsFound);
+
+			if(direction < 0){
+				directedConnections = directedConnections.inputConnections;
+			}
+			else{
+				directedConnections = directedConnections.outputConnections;
+			}
+
+			connectionsFound = connectionsFound.concat(directedConnections);
+
+			var result = directedConnections;
+
+			for(var i = 0; i < directedConnections.length; i++){
+				var matches = getConnectionsFromConnection(directedConnections[i], connections, connectionsFound, direction);
+
+				if(matches.length <= 0){
+					continue;
+				}
+
+				result = result.concat(matches);
+			}
+
+			return result;
+		}
+
+		function getConnectionsToNode(node, connections, connectionsToExclude){
+			var inputConnections = [];
+
+			var outputConnections = [];
+			
+			for(var i = 0; i < connections.length; i++){
+				var source = connections[i].source;
+
+				var destination = connections[i].dest;
+
+				// The connection has already been found and it's not a connection to or from this node, then continue
+				if(connectionsToExclude.indexOf(connections[i]) >= 0 || (source.nodeID !== node.nodeID && destination.nodeID !== node.nodeID)){
+					continue;
+				}
+
+				if(source.nodeID === node.nodeID){
+					outputConnections.push(connections[i]);
+				}
+
+				if(destination.nodeID === node.nodeID){
+					inputConnections.push(connections[i]);
+				}
+			}
+
+			return {inputConnections: inputConnections, outputConnections: outputConnections};
+		}
+
+
+
 		this.connectNodeBetween = function(connection, newNodeID){
 			var sourceDataConnection = this._connectDataNodes(connection.data.source.nodeID, newNodeID);
 			this._connectViewModelNodes(sourceDataConnection, connection.source, this.findInputConnector(newNodeID, 0));

@@ -1279,4 +1279,69 @@ describe('flowchart-viewmodel', function () {
 		expect(selectedConnections[0]).toBe(connection2);
 		expect(selectedConnections[1]).toBe(connection3);	
 	});
+
+	it('view model can delete connection', function () {
+		
+		//ARRANGE
+		var mockDataModel = createMockDataModel(
+			[ 1, 2, 3 ],
+			[
+				[[ 1, 0 ], [ 2, 0 ]],
+				[[ 2, 1 ], [ 1, 2 ]],
+				[[ 1, 1 ], [ 3, 0 ]],
+				[[ 3, 2 ], [ 2, 1 ]]
+			]
+		);
+		
+		var viewModel = new flowchart.ChartViewModel(mockDataModel);
+
+		var thirdConnection = viewModel.connections[2];
+
+		var fourthConnection = viewModel.connections[3];
+
+		//ACT
+		viewModel.deleteConnection(thirdConnection);
+
+		//ASSERT
+		expect(viewModel.connections.length).toBe(3);
+		expect(viewModel.connections[2]).toBe(fourthConnection);
+	});
+
+	it('view model can get full path from and to a connection', function () {
+		
+		//ARRANGE
+		var mockDataModel = createMockDataModel(
+			[ 1, 2, 3, 4, 5, 6, 7 ],
+			[
+				[[ 1, 0 ], [ 2, 0 ]],
+				[[ 2, 0 ], [ 3, 0 ]],
+				[[ 2, 1 ], [ 4, 0 ]],
+				[[ 2, 2 ], [ 5, 0 ]],
+				[[ 3, 0 ], [ 6, 0 ]],
+				[[ 4, 0 ], [ 6, 1 ]],
+				[[ 5, 0 ], [ 6, 2 ]],
+				[[ 6, 0 ], [ 7, 0 ]],
+			]
+		);
+		
+		var viewModel = new flowchart.ChartViewModel(mockDataModel);
+
+		var from2To4 = mockDataModel.connections[2];
+
+		var expectedFrom1To2 = mockDataModel.connections[0];
+
+		var expectedFrom4To6 = mockDataModel.connections[5];
+
+		var expectedFrom6To7 = mockDataModel.connections[7];
+
+		//ACT
+		//debugger;
+		var pathFrom2To4 = viewModel.getConnectionsFromConnection(from2To4);
+
+		//ASSERT
+		expect(pathFrom2To4.length).toBe(3);
+		expect(pathFrom2To4[0]).toBe(expectedFrom1To2);
+		expect(pathFrom2To4[1]).toBe(expectedFrom4To6);
+		expect(pathFrom2To4[2]).toBe(expectedFrom6To7);
+	});
 });
