@@ -1344,4 +1344,58 @@ describe('flowchart-viewmodel', function () {
 		expect(pathFrom2To4[1]).toBe(expectedFrom4To6);
 		expect(pathFrom2To4[2]).toBe(expectedFrom6To7);
 	});
+
+	it('view model can get full path from and to a connection with 3 nodes cycle', function () {
+		
+		//ARRANGE
+		var mockDataModel = createMockDataModel(
+			[ 1, 2, 3 ],
+			[
+				[[ 1, 0 ], [ 2, 0 ]],
+				[[ 2, 0 ], [ 3, 0 ]],
+				[[ 3, 1 ], [ 1, 0 ]]
+			]
+		);
+		
+		var viewModel = new flowchart.ChartViewModel(mockDataModel);
+
+		var from1To2 = mockDataModel.connections[0];
+
+		//ACT
+		var pathFrom1To2 = viewModel.getConnectionsFromConnection(from1To2);
+
+		//ASSERT
+		expect(pathFrom1To2.length).toBe(6);
+	});
+
+	it('view model can get full path from and to a connection with 6 nodes cycle', function () {
+		
+		//ARRANGE
+		var mockDataModel = createMockDataModel(
+			[ 1, 2, 3, 4, 5, 6 ],
+			[
+				[[ 1, 0 ], [ 2, 0 ]],
+				[[ 2, 0 ], [ 3, 0 ]],
+				[[ 3, 0 ], [ 4, 0 ]],
+				[[ 3, 0 ], [ 5, 0 ]],
+				
+				[[ 2, 1 ], [ 6, 0 ]],
+				[[ 3, 1 ], [ 6, 1 ]],
+
+				[[ 6, 0 ], [ 2, 1 ]],
+				[[ 6, 1 ], [ 3, 1 ]],
+			]
+		);
+		
+		var viewModel = new flowchart.ChartViewModel(mockDataModel);
+
+		var from2To3 = mockDataModel.connections[1];
+
+		//ACT
+		var pathFrom2To3 = viewModel.getConnectionsFromConnection(from2To3);
+		debugger;
+
+		//ASSERT
+		expect(pathFrom2To3.length).toBe(13);
+	});
 });
